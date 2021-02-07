@@ -1,9 +1,9 @@
-println("Getting PyPlot and Progressbar...")
+println("Getting PyPlot...")
 using PyPlot
-using ProgressBars
-println("Done getting, including system impl")
-include("granular_gas.jl")
-println("Done including system")
+println("Done getting PyPlot")
+
+include("../src/granular_gas.jl")
+using .granulargas
 
 
 if PROGRAM_FILE == basename(@__FILE__)

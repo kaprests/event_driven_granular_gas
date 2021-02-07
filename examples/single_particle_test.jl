@@ -1,8 +1,9 @@
 println("Getting PyPlot...")
 using PyPlot
-println("Done getting PyPlot, including system impl")
-include("granular_gas.jl")
-println("Done including system")
+println("Done getting PyPlot")
+
+include("../src/granular_gas.jl")
+using .granulargas
 
 
 if PROGRAM_FILE == basename(@__FILE__)
