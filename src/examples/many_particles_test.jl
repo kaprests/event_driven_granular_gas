@@ -2,7 +2,7 @@ println("Getting PyPlot...")
 using PyPlot
 println("Done getting PyPlot")
 
-include("../src/granular_gas.jl")
+include("../granular_gas.jl")
 using .granulargas
 
 
@@ -16,9 +16,9 @@ if PROGRAM_FILE == basename(@__FILE__)
     Lx = 1.
     Ly = 1.
     Nx = 100
-    Ny = 50
+    Ny = 100
 
-    x_pos, y_pos = random_positions(num_particles, r, Lx, 0.5*Ly, Nx, Ny)
+    x_pos, y_pos = random_positions(num_particles, r, Lx, Ly, Nx, Ny)
     x_vel, y_vel = random_directions(num_particles)
     x_vel *= v0
     y_vel *= v0
@@ -44,17 +44,16 @@ if PROGRAM_FILE == basename(@__FILE__)
     scatter(system.x_velocities, system.y_velocities, s=5.)
     show()
 
-    loops = 10*num_particles
+    loops = 100*num_particles
     x1 = zeros(loops+1)
     y1 = zeros(loops+1)
     x1[1] = system.x_positions[1]
     y1[1] = system.y_positions[1]
-    for i in ProgressBar(1:loops)
+    for i in 1:loops
         evolve_system!(system)
         x1[i+1] = system.x_positions[1]
         y1[i+1] = system.y_positions[1]
     end
-    println("simulation done")
 
     # plot path
     plot(x1, y1)
