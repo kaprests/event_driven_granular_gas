@@ -33,19 +33,17 @@ function random_directions(N::Int64)
 end
 
 
-#############
-### Tests ###
-#############
-
-
 if PROGRAM_FILE == basename(@__FILE__)
     # run (eventual) tests
     println("done importing, running function")
+
+    # test random_positions
     x, y = random_positions(10000, 1e-9, 1., 1., 1000, 1000)
     title("random positions")
     scatter(x, y, s=2)
     show()
 
+    # test random_directions
     title("random directions")
     x, y = random_directions(1000)
     scatter(x, y, s=2)

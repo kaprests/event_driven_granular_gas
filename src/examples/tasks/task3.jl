@@ -2,7 +2,7 @@ println("Getting PyPlot...")
 using PyPlot
 println("Done getting PyPlot")
 
-include("../granular_gas.jl")
+include("../../granular_gas.jl")
 using .granulargas
 
 

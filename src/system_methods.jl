@@ -3,7 +3,7 @@ module system_methods
 include("structs.jl")
 using LinearAlgebra, DelimitedFiles
 
-export new_system, evolve_system!, simulate_until_equilibrium!, average_kinetic_energy, average_speed, simulate_and_log_avg_kinetic
+export new_system, evolve_system!, simulate_until_equilibrium!, average_kinetic_energy, average_speed, simulate_and_log_avg_kinetic, save_pos, total_energy
 
 
 const VERTICAL_WALL = -1
@@ -370,11 +370,13 @@ end
 
 
 function equilibrium_reached(sys::System, mfactor::Int64)
+    # Return true if sufficiently hight pp-collisions
     return sys.num_pp_collisions / sys.num_particles > mfactor
 end
 
 
 function simulate_until_equilibrium!(sys::System; mfactor=100)
+    # simulates until sufficiently many particle-particle collisions
     while ! equilibrium_reached(sys, mfactor)
         evolve_system!(sys)
     end
@@ -383,6 +385,7 @@ end
 
 
 function simulate_until_equilibrium!(sys::System, max_iter::Int64; mfactor=100)
+    # simulates until sufficiently many particle-particle collisions, with max iter limit
     i = 0
     while ! equilibrium_reached(sys, mfactor)
         evolve_system!(sys)
@@ -397,6 +400,7 @@ end
 
 
 function average_speed(sys::System; start=1, stop=0)
+    # compute average speed of systems particles
     i, j = start, stop
     if j == 0
         j = sys.num_particles
@@ -406,6 +410,7 @@ end
 
 
 function average_kinetic_energy(sys::System; start=1, stop=0)
+    # compute average kinetic energy of systems particles
     i, j = start, stop
     if j == 0
         j = sys.num_particles
@@ -415,6 +420,7 @@ end
 
 
 function simulate_and_log_avg_kinetic(sys::System, num_interval_col::Int64, fname::String; mfactor=20)
+    # simulate gas and log average kinetic energies at small time intervals
     open(fname*"avg_energies.csv", "w") do output
         writedlm(output, ["m0" "4m0" "sys"], ',')
         while ! equilibrium_reached(sys, mfactor)
@@ -427,6 +433,21 @@ function simulate_and_log_avg_kinetic(sys::System, num_interval_col::Int64, fnam
             end
         end
     end
+end
+
+
+function save_pos(sys::System, fname::String)
+    # save the positions of the systems particles and radius
+    open(fname*"positions.csv", "w") do output
+        writedlm(output, ["x" "y" "r"], ',')
+        writedlm(output, [sys.x_positions sys.y_positions sys.radii], ',')
+    end
+end
+
+
+function total_energy(sys::System)
+    # Returns system's energy
+    return 0.5 * dot((sys.x_velocities.^2 + sys.y_velocities.^2), sys.masses)
 end
 
 

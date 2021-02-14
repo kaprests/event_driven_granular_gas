@@ -1,8 +1,3 @@
-###############
-### Structs ###
-###############
-
-
 using DataStructures
 
 
