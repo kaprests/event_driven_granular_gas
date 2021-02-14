@@ -1,9 +1,9 @@
 module system_methods
 
 include("structs.jl")
-using LinearAlgebra
+using LinearAlgebra, DelimitedFiles
 
-export new_system, evolve_system!
+export new_system, evolve_system!, simulate_until_equilibrium!, average_kinetic_energy, average_speed, simulate_and_log_avg_kinetic
 
 
 const VERTICAL_WALL = -1
@@ -42,6 +42,7 @@ function new_system(
         zeros(num_particles),
         PriorityQueue{Collision, Float64}(),
         0.,
+        0,
         0,
     )
     # Make sure all particles are within bounds (not overlap check to come maybe)
@@ -172,6 +173,7 @@ function particle_particle_col!(sys::System, i::Int64, j::Int64)
 
     sys.collision_counts[i] += 1
     sys.collision_counts[j] += 1
+    sys.num_pp_collisions += 1
     return nothing
 end
 
@@ -186,6 +188,7 @@ function collision!(sys::System, col::Collision)
     elseif col.collider2 == HORISONTAL_WALL
         horisontal_wall_col!(sys, col.collider1)
     end
+    sys.num_collisions += 1
     return nothing
 end
 
@@ -363,6 +366,67 @@ function evolve_system!(sys::System)
         find_and_enqueue_col!(sys, next_col.collider2)
     end
     return nothing
+end
+
+
+function equilibrium_reached(sys::System, mfactor::Int64)
+    return sys.num_pp_collisions / sys.num_particles > mfactor
+end
+
+
+function simulate_until_equilibrium!(sys::System; mfactor=100)
+    while ! equilibrium_reached(sys, mfactor)
+        evolve_system!(sys)
+    end
+    println("num collisions: ", sys.num_collisions)
+end
+
+
+function simulate_until_equilibrium!(sys::System, max_iter::Int64; mfactor=100)
+    i = 0
+    while ! equilibrium_reached(sys, mfactor)
+        evolve_system!(sys)
+        i += 1
+        if i == max_iter
+            println("max iter reached")
+            break
+        end
+    end
+    println("num collisions: ", sys.num_collisions)
+end
+
+
+function average_speed(sys::System; start=1, stop=0)
+    i, j = start, stop
+    if j == 0
+        j = sys.num_particles
+    end
+    return sum((sys.x_velocities[i:j].^2 + sys.y_velocities[i:j].^2)) / (j - i + 1)
+end
+
+
+function average_kinetic_energy(sys::System; start=1, stop=0)
+    i, j = start, stop
+    if j == 0
+        j = sys.num_particles
+    end
+    return 0.5 * dot((sys.x_velocities[i:j].^2 + sys.y_velocities[i:j].^2), sys.masses[i:j]) / (j - i + 1)
+end
+
+
+function simulate_and_log_avg_kinetic(sys::System, num_interval_col::Int64, fname::String; mfactor=20)
+    open(fname*"avg_energies.csv", "w") do output
+        writedlm(output, ["m0" "4m0" "sys"], ',')
+        while ! equilibrium_reached(sys, mfactor)
+            evolve_system!(sys)
+            if sys.num_particles % num_interval_col == 0
+                avg_kinetic_energy_m0 = average_kinetic_energy(sys, stop=Int(sys.num_particles/2))
+                avg_kinetic_energy_4m0 = average_kinetic_energy(sys, start=Int(sys.num_particles/2))
+                avg_kinetic_energy_all = average_kinetic_energy(sys)
+                writedlm(output, [avg_kinetic_energy_m0 avg_kinetic_energy_4m0 avg_kinetic_energy_all], ',')
+            end
+        end
+    end
 end
 
 

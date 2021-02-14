@@ -44,7 +44,7 @@ if PROGRAM_FILE == basename(@__FILE__)
     scatter(system.x_velocities, system.y_velocities, s=5.)
     show()
 
-    loops = 100*num_particles
+    loops = 10*num_particles
     x1 = zeros(loops+1)
     y1 = zeros(loops+1)
     x1[1] = system.x_positions[1]

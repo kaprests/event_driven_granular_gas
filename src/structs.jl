@@ -34,4 +34,5 @@ mutable struct System
     collision_queue::PriorityQueue{Collision, Float64} # {Collision, collision time}
     current_time::Float64
     num_pp_collisions::Int64
+    num_collisions::Int64
 end
