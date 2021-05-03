@@ -1,6 +1,7 @@
 module system_methods
 
 include("structs.jl")
+include("utils.jl")
 using LinearAlgebra, DelimitedFiles
 
 export new_system, evolve_system!, simulate_until_equilibrium!, average_kinetic_energy, average_speed, simulate_and_log_avg_kinetic, save_pos, total_energy
@@ -421,8 +422,8 @@ end
 
 function simulate_and_log_avg_kinetic(sys::System, num_interval_col::Int64, fname::String; mfactor=20)
     # simulate gas and log average kinetic energies at small time intervals
-    open(fname*"avg_energies.csv", "w") do output
-        writedlm(output, ["m0" "4m0" "sys"], ',')
+    open(fname*"avg_energies.dat", "w") do output
+        writedlm(output, ["m0" "4m0" "sys"], ' ')
         while ! equilibrium_reached(sys, mfactor)
             evolve_system!(sys)
             if sys.num_particles % num_interval_col == 0
@@ -436,12 +437,19 @@ function simulate_and_log_avg_kinetic(sys::System, num_interval_col::Int64, fnam
 end
 
 
-function save_pos(sys::System, fname::String)
+function save_pos(sys::System, outpath::String)
     # save the positions of the systems particles and radius
-    open(fname*"positions.csv", "w") do output
-        writedlm(output, ["x" "y" "r"], ',')
-        writedlm(output, [sys.x_positions sys.y_positions sys.radii], ',')
-    end
+    headers = ["x" "y" "r"]
+    table = [sys.x_positions sys.y_positions sys.radii]
+    write_table_to_file(outpath, table, headers)
+end
+
+
+function save_vel(sys::System, fname::String)
+    # save the positions of the systems particles and radius
+    headers = ["vx" "y" "r"]
+    table = [sys.x_positions sys.y_positions sys.radii]
+    write_table_to_file(outpath, table, headers)
 end
 
 

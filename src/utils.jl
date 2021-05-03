@@ -3,7 +3,7 @@ module utils
 using StatsBase
 using PyPlot
 
-export random_positions, random_directions
+export random_positions, random_directions, write_table_to_file
 
 
 function random_positions(N::Int64, r::Float64, Lx::Float64, Ly::Float64, Nx::Int64, Ny::Int64)
@@ -30,6 +30,14 @@ function random_directions(N::Int64)
     angles = rand(0:0.01:2*pi, N)
     norm_complex = exp.(angles*im)
     return real(norm_complex), imag(norm_complex) # vx, vy
+end
+
+
+function write_table_to_file(outpath::String, table::Array{Float64}, headers::Array{String})
+    open(outpath, "w") do output
+        writedlm(output*".dat", headers, ' ')
+        writedlm(output, table, ' ')
+    end
 end
 
 

@@ -1,0 +1,28 @@
+\documentclass[margin=5mm]{standalone}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usetikzlibrary{backgrounds}% required for 'inner frame sep' or 'tight background'
+
+\begin{document}
+\begin{tikzpicture}[
+    inner frame sep=0,
+]
+    \begin{axis}[
+        xlabel={$t$},
+        ylabel={$x$},
+        scatter/use mapped color=
+            {draw=black, fill=gray},
+    ]
+        \addplot[
+            scatter, 
+            only marks,
+            visualization depends on={\thisrow{r} \as \radius},
+            scatter/@pre marker code/.append style={
+                /tikz/mark size={0.2 + abs(100*\radius)}
+            }
+        ] 
+            table[x={x}, y={y}] 
+            {data/final_task4positions.dat};
+    \end{axis}
+\end{tikzpicture}
+\end{document}
